@@ -1,0 +1,70 @@
+# Arquivos de Ambiente Virtual
+# Nunca comite sua pasta de ambiente virtual!
+.venv/
+venv/
+ENV/
+env/
+virtualenv/
+.virtualenv/
+
+# Arquivos sensíveis e de configuração local
+# Essencial para segurança! Contém senhas, chaves de API, etc.
+.env
+*.env
+*.env.*
+credentials.json
+*.pem
+*.key
+
+# Bytecode e Cache do Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.python-version
+
+# Arquivos de Cache e Metadados de Ferramentas
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+nosetests.xml
+coverage.xml
+
+# Arquivos de IDEs e Editores de Código
+# Configurações específicas do seu ambiente de desenvolvimento
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Arquivos de build e distribuição de pacotes
+/build/
+/dist/
+/downloads/
+/eggs/
+*.egg-info/
+*.egg
+
+# Arquivos de Logs
+*.log
+logs/
+
+# Bancos de Dados Locais
+# Ex: bancos SQLite usados para testes ou desenvolvimento
+*.sqlite3
+*.db
+db.sqlite3
+
+# Artefatos do Jupyter Notebook
+.ipynb_checkpoints
+
+# Arquivos gerados pelo Sistema Operacional
+# Lixo do macOS, Windows, etc.
+.DS_Store
+Thumbs.db
+desktop.ini
