@@ -6,6 +6,7 @@ from fastapi.exceptions import RequestValidationError
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 from routes.email.router import router as email_router
+from routes.cartao.router import router as cartao_router
 
 app = FastAPI()
 load_dotenv()
@@ -26,6 +27,7 @@ async def validation_exception_handler(request, exc):
     )
 
 app.include_router(email_router)
+app.include_router(cartao_router)
 
 
 if __name__ == '__main__':
