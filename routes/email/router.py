@@ -18,6 +18,7 @@ async def sendEmail(email: EmailRequest):
             return JSONResponse(status_code=404, content={"codigo": response["status"], "messagem": response["message"]})
 
         return JSONResponse(status_code=200, content=response["data"])
+
     except Exception as e:
         print(e)
         return JSONResponse(status_code=500, content={"message": "Erro interno do servidor"})
