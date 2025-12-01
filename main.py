@@ -1,3 +1,6 @@
+import os
+
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from starlette.middleware.cors import CORSMiddleware
@@ -5,7 +8,7 @@ from starlette.responses import JSONResponse
 from routes.email.router import router as email_router
 
 app = FastAPI()
-
+load_dotenv()
 
 app.add_middleware(
     CORSMiddleware,
