@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from starlette.responses import JSONResponse
 
 from entities.cartao.cartao import Cartao
-from functions.stripe.mercado_pago_manager import mercado_pago_instance
+from functions.mercado_pago.mercado_pago_manager import mercado_pago_instance
 
 router = APIRouter()
 
