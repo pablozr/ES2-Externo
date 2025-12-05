@@ -58,6 +58,7 @@ class MercadoPagoManager:
 
             token_id = token["response"]["id"]
 
+            # caso você esteja lendo esse código, use o nome de titular como APRO pra poder aprovar o pagamento no ambiente de sandbox do mercado pago
             payment_data = {
                 "transaction_amount": float(valor),
                 "token": token_id,

@@ -58,13 +58,11 @@ class AsyncpgManager:
             cartao = await ciclista_instance.obter_cartao(cobranca["ciclista"])
             if not cartao["status"]:
                 return {"status": False, "mensagem": cartao["mensagem"]}
-            print(f"DEBUG CARTAO: {cartao}")
 
             async with self.pool.acquire() as connection:
                 cobranca_pendente_id = await connection.fetchval(cobranca_pendente_query, cobranca["valor"], cobranca["ciclista"])
 
                 pagamento = await mercado_pago_instance.realiza_pagamento(cartao["data"], cobranca["valor"])
-                print(f"DEBUG PAGAMENTO: {pagamento}")
 
                 if pagamento["status"]:
                     cobranca_finalizada = await connection.fetchrow(cobranca_finalizada_query, cobranca_pendente_id)
@@ -121,7 +119,6 @@ class AsyncpgManager:
             cartao = await ciclista_instance.obter_cartao(cobranca["ciclista"])
             if not cartao["status"]:
                 return {"status": False, "mensagem": cartao["mensagem"]}
-            print(f"DEBUG CARTAO: {cartao}")
 
             async with self.pool.acquire() as connection:
                 cobranca = await connection.fetchrow(query, cobranca["valor"], cobranca["ciclista"])
@@ -132,6 +129,46 @@ class AsyncpgManager:
         except Exception as e:
             print(e)
             return {"status": False, "mensagem": "Erro ao colocar a cobrança na fila"}
+
+    async def processar_fila_cobrancas(self):
+        query_select = """
+            SELECT id, valor, ciclista
+            FROM cobrancas
+            WHERE status = 'EM_FILA'
+            ORDER BY hora_solicitacao;
+        """
+
+        query_update = """
+            UPDATE cobrancas
+                SET status = 'FINALIZADA',
+                    hora_finalizacao = NOW()
+                WHERE id = $1
+                RETURNING status, hora_solicitacao, hora_finalizacao, valor, ciclista, id;
+        """
+
+        try:
+            async with self.pool.acquire() as connection:
+                rows = await connection.fetch(query_select)
+
+                lista_cobrancas = [{**row} for row in rows]
+                processadas = []
+
+                for cobranca in lista_cobrancas:
+                    cartao = await ciclista_instance.obter_cartao(cobranca["ciclista"])
+
+                    pagamento = await mercado_pago_instance.realiza_pagamento(cartao["data"], cobranca["valor"])
+
+                    if pagamento["status"]:
+                        cobranca_finalizada = await connection.fetchrow(query_update, cobranca["id"])
+                        processadas.append({**cobranca_finalizada, "hora_solicitacao": cobranca_finalizada["hora_solicitacao"].isoformat() if cobranca_finalizada["hora_solicitacao"] else None,
+                                            "hora_finalizacao": cobranca_finalizada["hora_finalizacao"].isoformat() if cobranca_finalizada["hora_finalizacao"] else None,
+                                            "valor": float(cobranca_finalizada["valor"])})
+
+                return {"status": True, "data": processadas}
+
+        except Exception as e:
+            print(e)
+            return {"status": False, "mensagem": "Erro ao processar a fila de cobranças"}
 
 
 asyncpg_manager  = AsyncpgManager()
