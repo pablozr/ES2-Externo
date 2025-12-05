@@ -63,10 +63,9 @@ class MercadoPagoManager:
                 "token": token_id,
                 "description": "Cobranca",
                 "installments": 1,
-                "payment_method_id": self._detectar_bandeira(card_number),
+
                 "payer": {
-                    "email": "test_user_123@test.com",
-                    "first_name": "Ciclista"
+                    "email": "ciclista.brasileiro@teste.com",
                 }
             }
 
@@ -75,23 +74,11 @@ class MercadoPagoManager:
             if payment["response"]["status"] == "approved":
                 return{"status": True}
             else:
-                return {"status": False, "mensagem": "Pagamento nao autorizado"}
+                return {"status": False, "mensagem": payment["response"]}
 
         except Exception as e:
             print(e)
             return {"status": False, "mensagem": "Erro interno"}
-
-    def _detectar_bandeira(self, numero: str) -> str:
-        """Helper simples para definir a bandeira baseada no começo do número"""
-        if numero.startswith("4"):
-            return "visa"
-        elif numero.startswith("5"):
-            return "master"
-        elif numero.startswith("34") or numero.startswith("37"):
-            return "amex"
-        elif numero.startswith("6"):
-            return "elo"  # Simplificação
-        return "visa"  # Fallback para testes
 
 
 mercado_pago_instance = MercadoPagoManager()

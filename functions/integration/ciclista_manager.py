@@ -16,7 +16,7 @@ class CiclistaManager:
                 response = await client.get(endpoint)
 
                 if response.status_code == 200:
-                    return response.json()
+                    return {"status": True, "data": response.json()}
                 else:
                     return {"status": False, "mensagem": "Ciclista não encontrado"}
             except httpx.RequestError as e:

@@ -51,21 +51,26 @@ class AsyncpgManager:
                 WHERE id = $1; 
         """
 
+        cobranca_pendente_id = None
+
         try:
+
+            cartao = await ciclista_instance.obter_cartao(cobranca["ciclista"])
+            if not cartao["status"]:
+                return {"status": False, "mensagem": cartao["mensagem"]}
+            print(f"DEBUG CARTAO: {cartao}")
+
             async with self.pool.acquire() as connection:
                 cobranca_pendente_id = await connection.fetchval(cobranca_pendente_query, cobranca["valor"], cobranca["ciclista"])
 
-                cartao = await ciclista_instance.obter_cartao(cobranca["ciclista"])
-                if not cartao:
-                    return {"status": False, "mensagem": cartao["mensagem"]}
-                print(f"DEBUG CARTAO: {cartao}")
-
-                pagamento = await mercado_pago_instance.realiza_pagamento(cartao, cobranca["valor"])
+                pagamento = await mercado_pago_instance.realiza_pagamento(cartao["data"], cobranca["valor"])
                 print(f"DEBUG PAGAMENTO: {pagamento}")
 
                 if pagamento["status"]:
                     cobranca_finalizada = await connection.fetchrow(cobranca_finalizada_query, cobranca_pendente_id)
-                    return {"status": True, "data": {**cobranca_finalizada}}
+                    return {"status": True, "data": {**cobranca_finalizada, "hora_solicitacao": cobranca_finalizada["hora_solicitacao"].isoformat() if cobranca_finalizada["hora_solicitacao"] else None,
+                                                     "hora_finalizacao": cobranca_finalizada["hora_finalizacao"].isoformat() if cobranca_finalizada["hora_finalizacao"] else None,
+                                                     "valor": float(cobranca_finalizada["valor"])}}
                 else:
                     await connection.execute(cobranca_falha_query, cobranca_pendente_id)
                     return {"status": False, "mensagem": pagamento["mensagem"]}
@@ -98,6 +103,35 @@ class AsyncpgManager:
         except Exception as e:
             print(e)
             return {"status": False, "mensagem": "Erro ao buscar a cobrança"}
+
+    async def colocar_cobranca_na_fila(self, cobranca: dict) -> dict:
+        query = """
+            INSERT INTO cobrancas(status, hora_solicitacao, hora_finalizacao, valor, ciclista)
+                VALUES(
+                      'EM_FILA',
+                    NOW(),
+                    NULL,
+                    $1,
+                    $2
+                ) RETURNING id, status, hora_solicitacao, hora_finalizacao, valor, ciclista;
+        """
+
+        try:
+
+            cartao = await ciclista_instance.obter_cartao(cobranca["ciclista"])
+            if not cartao["status"]:
+                return {"status": False, "mensagem": cartao["mensagem"]}
+            print(f"DEBUG CARTAO: {cartao}")
+
+            async with self.pool.acquire() as connection:
+                cobranca = await connection.fetchrow(query, cobranca["valor"], cobranca["ciclista"])
+                return {"status": True, "data": {**cobranca, "hora_solicitacao": cobranca["hora_solicitacao"].isoformat() if cobranca["hora_solicitacao"] else None,
+                                                 "hora_finalizacao": cobranca["hora_finalizacao"].isoformat() if cobranca["hora_finalizacao"] else None,
+                                                 "valor": float(cobranca["valor"])}}
+
+        except Exception as e:
+            print(e)
+            return {"status": False, "mensagem": "Erro ao colocar a cobrança na fila"}
 
 
 asyncpg_manager  = AsyncpgManager()

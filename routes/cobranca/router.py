@@ -34,3 +34,19 @@ async def get_cobranca(cobranca_id: int):
     except Exception as e:
         print(e)
         return JSONResponse(status_code=500, content={"mensagem": "Erro interno do servidor"})
+
+@router.post("/filaCobranca")
+async def colocar_cobranca_na_fila(cobranca: CobrancaRequest):
+    cobranca = cobranca.model_dump()
+
+    try:
+        response = await asyncpg_manager.colocar_cobranca_na_fila(cobranca)
+
+        if not response["status"]:
+            return JSONResponse(status_code=400, content={"mensagem": response["mensagem"]})
+
+        return JSONResponse(status_code=200, content=response["data"])
+
+    except Exception as e:
+        print(e)
+        return JSONResponse(status_code=500, content={"mensagem": "Erro interno do servidor"})
