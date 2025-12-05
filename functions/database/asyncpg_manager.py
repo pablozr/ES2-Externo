@@ -77,5 +77,27 @@ class AsyncpgManager:
                     await connection.execute(cobranca_falha_query, cobranca_pendente_id)
             return {"status": False, "mensagem": "Erro ao processar a cobrança"}
 
+    async def get_cobranca_by_id(self, cobranca_id: int) -> dict:
+        query = """
+            SELECT id, status, hora_solicitacao, hora_finalizacao, valor, ciclista
+            FROM cobrancas
+            WHERE id = $1;
+        """
+
+        try:
+            async with self.pool.acquire() as connection:
+                cobranca = await connection.fetchrow(query, cobranca_id)
+
+                if cobranca:
+                    return {"status": True, "data": {**cobranca, "hora_solicitacao": cobranca["hora_solicitacao"].isoformat() if cobranca["hora_solicitacao"] else None,
+                                                     "hora_finalizacao": cobranca["hora_finalizacao"].isoformat() if cobranca["hora_finalizacao"] else None,
+                                                     "valor": float(cobranca["valor"])}}
+                else:
+                    return {"status": False, "mensagem": "Cobrança não encontrada"}
+
+        except Exception as e:
+            print(e)
+            return {"status": False, "mensagem": "Erro ao buscar a cobrança"}
+
 
 asyncpg_manager  = AsyncpgManager()
