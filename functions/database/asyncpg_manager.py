@@ -55,29 +55,27 @@ class AsyncpgManager:
             async with self.pool.acquire() as connection:
                 cobranca_pendente_id = await connection.fetchval(cobranca_pendente_query, cobranca["valor"], cobranca["ciclista"])
 
-            cartao = await ciclista_instance.obter_cartao(cobranca["ciclista"])
-            if not cartao:
-                return {"status": False, "mensagem": cartao["mensagem"]}
-            print(f"DEBUG CARTAO: {cartao}")
+                cartao = await ciclista_instance.obter_cartao(cobranca["ciclista"])
+                if not cartao:
+                    return {"status": False, "mensagem": cartao["mensagem"]}
+                print(f"DEBUG CARTAO: {cartao}")
 
-            pagamento = await mercado_pago_instance.realiza_pagamento(cartao, cobranca["valor"])
-            print(f"DEBUG PAGAMENTO: {pagamento}")
+                pagamento = await mercado_pago_instance.realiza_pagamento(cartao, cobranca["valor"])
+                print(f"DEBUG PAGAMENTO: {pagamento}")
 
-            if pagamento["status"]:
-                async with self.pool.acquire() as connection:
+                if pagamento["status"]:
                     cobranca_finalizada = await connection.fetchrow(cobranca_finalizada_query, cobranca_pendente_id)
-                return {"status": True, "data": {**cobranca_finalizada}}
-            else:
-                async with self.pool.acquire() as connection:
+                    return {"status": True, "data": {**cobranca_finalizada}}
+                else:
                     await connection.execute(cobranca_falha_query, cobranca_pendente_id)
-                return {"status": False, "mensagem": pagamento["mensagem"]}
+                    return {"status": False, "mensagem": pagamento["mensagem"]}
 
         except Exception as e:
             print(e)
-            async with self.pool.acquire() as connection:
-                await connection.execute(cobranca_falha_query, cobranca_pendente_id)
+            if cobranca_pendente_id:
+                async with self.pool.acquire() as connection:
+                    await connection.execute(cobranca_falha_query, cobranca_pendente_id)
             return {"status": False, "mensagem": "Erro ao processar a cobrança"}
-
 
 
 asyncpg_manager  = AsyncpgManager()

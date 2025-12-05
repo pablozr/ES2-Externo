@@ -54,7 +54,7 @@ class MercadoPagoManager:
             token = sdk.card_token().create(card_data)
 
             if token["status"] != 201:
-                return{"status": False, "mensagem": "Dados invalido"}
+                return{"status": False, "mensagem": "Dados invalidos"}
 
             token_id = token["response"]["id"]
 
