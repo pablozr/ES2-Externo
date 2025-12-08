@@ -425,7 +425,4 @@ Este projeto foi desenvolvido para fins acadêmicos como parte da disciplina de 
 
 ---
 
-## Autores
-
-Desenvolvido por estudantes de Engenharia de Software.
 
