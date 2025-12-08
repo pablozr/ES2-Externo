@@ -34,6 +34,11 @@ __pycache__/
 htmlcov/
 nosetests.xml
 coverage.xml
+test-results.xml
+
+# SonarQube
+.scannerwork/
+.sonar/
 
 # Arquivos de IDEs e Editores de Código
 # Configurações específicas do seu ambiente de desenvolvimento
