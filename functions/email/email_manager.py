@@ -18,8 +18,8 @@ class EmailManager:
             MAIL_FROM=EmailStr(os.getenv("MAIL_FROM")),
             MAIL_PORT=int(os.getenv("MAIL_PORT", 587)),
             MAIL_SERVER=os.getenv("MAIL_SERVER"),
-            MAIL_STARTTLS=True,
-            MAIL_SSL_TLS=False,
+            MAIL_STARTTLS=False,
+            MAIL_SSL_TLS=True,
             USE_CREDENTIALS=True,
             VALIDATE_CERTS=True,
         )
