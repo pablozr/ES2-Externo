@@ -10,6 +10,7 @@ from functions.database.asyncpg_manager import asyncpg_manager
 from routes.email.router import router as email_router
 from routes.cartao.router import router as cartao_router
 from routes.cobranca.router import router as cobranca_router
+from routes.banco.router import router as banco_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -32,6 +33,7 @@ app.add_middleware(
 app.include_router(email_router)
 app.include_router(cartao_router)
 app.include_router(cobranca_router)
+app.include_router(banco_router)
 
 
 if __name__ == '__main__':

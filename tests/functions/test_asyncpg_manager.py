@@ -393,3 +393,28 @@ class TestAsyncpgManager:
 
                 assert result["status"] is True
                 assert result["data"] == []  # Nenhuma cobrança processada
+
+    @pytest.mark.asyncio
+    async def test_restaurar_banco_sucesso(self, asyncpg_manager, mock_pool):
+        """Testa restauração do banco com sucesso."""
+        pool, connection = mock_pool
+        asyncpg_manager.pool = pool
+
+        result = await asyncpg_manager.restaurar_banco()
+
+        assert result["status"] is True
+        assert result["mensagem"] == "Banco de dados restaurado com sucesso"
+        connection.execute.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_restaurar_banco_excecao(self, asyncpg_manager, mock_pool):
+        """Testa restauração do banco com exceção."""
+        pool, connection = mock_pool
+        asyncpg_manager.pool = pool
+
+        connection.execute.side_effect = Exception("Database error")
+
+        result = await asyncpg_manager.restaurar_banco()
+
+        assert result["status"] is False
+        assert "Erro ao restaurar" in result["mensagem"]

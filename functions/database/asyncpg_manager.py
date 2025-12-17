@@ -170,5 +170,19 @@ class AsyncpgManager:
             print(e)
             return {"status": False, "mensagem": "Erro ao processar a fila de cobranças"}
 
+    async def restaurar_banco(self) -> dict:
+        query = """
+            TRUNCATE TABLE cobrancas RESTART IDENTITY CASCADE;
+        """
+
+        try:
+            async with self.pool.acquire() as connection:
+                await connection.execute(query)
+                return {"status": True, "mensagem": "Banco de dados restaurado com sucesso"}
+
+        except Exception as e:
+            print(e)
+            return {"status": False, "mensagem": "Erro ao restaurar o banco de dados"}
+
 
 asyncpg_manager  = AsyncpgManager()
