@@ -5,7 +5,7 @@ from functions.database.asyncpg_manager import asyncpg_manager
 
 router = APIRouter()
 
-@router.post("/restaurarBanco")
+@router.get("/restaurarBanco")
 async def restaurar_banco():
     try:
         response = await asyncpg_manager.restaurar_banco()
@@ -18,4 +18,5 @@ async def restaurar_banco():
     except Exception as e:
         print(e)
         return JSONResponse(status_code=500, content={"mensagem": "Erro interno do servidor"})
+
 

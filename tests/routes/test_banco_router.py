@@ -59,3 +59,4 @@ class TestBancoRouter:
             assert response.status_code == 500
             assert "mensagem" in response.json()
 
+
